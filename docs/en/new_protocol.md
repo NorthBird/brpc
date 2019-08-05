@@ -22,7 +22,7 @@ brpc is designed to add new protocols at any time, just proceed as follows:
 
 Add new protocol type in ProtocolType in [options.proto](https://github.com/brpc/brpc/blob/master/src/brpc/options.proto). If you need to add new protocol, please contact us to add it for you to make sure there is no conflict with protocols of others.
 
-Currently we support in ProtocolType(at the end of 2016):
+Currently we support in ProtocolType(at the middle of 2018):
 ```c++
 enum ProtocolType {
     PROTOCOL_UNKNOWN = 0;
@@ -48,6 +48,10 @@ enum ProtocolType {
     PROTOCOL_DISP_IDL = 20;            // Client side only
     PROTOCOL_ERSDA_CLIENT = 21;        // Client side only
     PROTOCOL_UBRPC_MCPACK2 = 22;       // Client side only
+    // Reserve special protocol for cds-agent, which depends on FIFO right now
+    PROTOCOL_CDS_AGENT = 23;           // Client side only
+    PROTOCOL_ESP = 24;                 // Client side only
+    PROTOCOL_THRIFT = 25;              // Server side only
 }
 ```
 ## Implement Callbacks
@@ -67,7 +71,6 @@ Argument: source is the binary content from remote side, socket is the correspon
 
 ParseResult could be an error or a cut message, its possible value contains:
 
-- PARSE_ERROR_TRY_OTHERS ：不是这个协议，框架会尝试下一个协议。source不能被消费。
 - PARSE_ERROR_TRY_OTHERS: current protocol is not matched, the framework would try next protocol. The data in source cannot be comsumed.
 - PARSE_ERROR_NOT_ENOUGH_DATA: the input data hasn't violated the current protocol yet, but the whole message cannot be detected as well. When there is new data from connection, new data will be appended to source and parse function is called again. If we can determine that data fits current protocol, the content of source can also be transferred to the internal state of protocol. For example, if source doesn't contain a whole http message, it will be consumed by http parser to avoid repeated parsing.
 - PARSE_ERROR_TOO_BIG_DATA: message size is too big, the connection will be closed to protect server.
